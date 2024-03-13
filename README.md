@@ -6,11 +6,11 @@ Upon completion you will be given the option to download the newly translated fi
 
 ## Running the app locally
 
-* clone repository to your local machine
-* open a terminal and navigate to the Translate_PPTX_inplace directory
-* run the following commands:
-  * pip install -r requirements.txt
-  * streamlit run app/translator_app_external_model.py
+- clone repository to your local machine
+- open a terminal and navigate to the Translate_PPTX_inplace directory
+- run the following commands:
+  - pip install -r requirements.txt
+  - streamlit run app/OCRexpand.py
 
 ## Running with the model on your local drive
 
@@ -21,3 +21,5 @@ The files for the model that I am using as the translator in this app can be loc
 ## Screenshot example of app in action:
 
 ![Screenshot example of app in action](app_screenshot/screenshot.png)# Total-Translator
+for additional language options for OCR visit
+https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html
