@@ -42,7 +42,7 @@ with col10:
 #st.image('./icons/IDSG.jpeg', width=140)
 #st.image('./icons/AI2Clogo.jpeg', width=140,)
 with col5:    
-    st.title('Powerpoint Translator')
+    st.title('Total Translator')
 st.write('More translation options can be added upon request.')
 
 uploaded_file = st.file_uploader('upload your powerpoint file here')
@@ -64,6 +64,20 @@ if uploaded_file:
 
         st.write("File uploaded successfully!")
         st.write("File path:", temp_file_path)
+    elif '.png' in uploaded_file.name:
+        file_contents = uploaded_file.getvalue()
+        #img =cv2.imread('ukrain.jpg')
+        
+        # Choose a path to save the file
+        temp_file_path = "temp_file.jpg"
+        img = cv2.imread(temp_file_path)
+        # Write the contents of the BytesIO object to a file
+        with open(temp_file_path, "wb") as f:
+            f.write(file_contents)
+
+        st.write("File uploaded successfully!")
+        st.write("File path:", temp_file_path)
+
     
     else:
         st.error('Please upload a Powerpoint file ending in .pptx or .jpg')
@@ -163,3 +177,34 @@ if st.button('Translate File'):
 
             st.success('Your Image file has been translated')
             st.download_button('The Text from your image', text_to_add, file_name=f'Your_translated.txt')
+
+    elif '.png' in uploaded_file.name:
+        if value1 == 'ar':
+            image_path= temp_file_path
+            out_image='out.png'
+            results=arabicocr.arabic_ocr(image_path,out_image)
+            words=[]
+            for i in range(len(results)):	
+                    word=results[i][1]
+                    words.append(word)
+            translated= []
+            translated= ' '.join(words)
+            results = translation_pipeline(translated)
+            text_to_add = results
+
+            st.success('Your Image file has been translated')
+            st.download_button('The Text from your image', text_to_add, file_name=f'Your_translated.txt')
+
+        else:
+            img = get_grayscale(img)
+            img = threshholding(img)
+            img = remove_noise(img)
+
+            text = ocrcore(img)
+            results = translation_pipeline(text)
+            text_to_add = results
+
+            st.success('Your Image file has been translated')
+            st.download_button('The Text from your image', text_to_add, file_name=f'Your_translated.txt')
+    else:
+        st.error("Unsupported File Type")
