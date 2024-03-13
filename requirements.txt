@@ -1,0 +1,10 @@
+streamlit
+python-pptx
+transformers
+torch
+sentencepiece
+sacremoses
+tesseract-ocr
+libtesseract-dev
+Pillow
+pytesseract
