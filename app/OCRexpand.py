@@ -16,7 +16,7 @@ from PIL import ImageEnhance, ImageFilter, Image
 from pytesseract import Output
 from PIL import Image
 import cv2
-
+from pdf2image import convert_from_bytes
 
 def ocrcore(img):
     text= pytesseract.image_to_string(img, lang= 'ukr')
@@ -30,6 +30,18 @@ def remove_noise(image):
 
 def threshholding(image):
     return cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+
+def perform_pdfocr(pdf_file):
+    # Convert PDF to images
+    images = convert_from_bytes(pdf_file.read())
+
+    # Perform OCR on each image
+    extracted_text = ""
+    for image in images:
+        text = pytesseract.image_to_string(image)
+        extracted_text += text + "\n"
+
+    return extracted_text
 
 st.set_page_config(page_title='Total Translator', layout='wide', initial_sidebar_state='expanded')
 #image1= image.open('./icons/IDSG.jpeg')
@@ -69,7 +81,7 @@ if uploaded_file:
         #img =cv2.imread('ukrain.jpg')
         
         # Choose a path to save the file
-        temp_file_path = "temp_file.jpg"
+        temp_file_path = "temp_file.png"
         img = cv2.imread(temp_file_path)
         # Write the contents of the BytesIO object to a file
         with open(temp_file_path, "wb") as f:
@@ -77,7 +89,12 @@ if uploaded_file:
 
         st.write("File uploaded successfully!")
         st.write("File path:", temp_file_path)
+    elif '.pdf' in uploaded_file.name:
 
+
+        st.write("PDF uploaded successfully!")
+        
+        
     
     else:
         st.error('Please upload a Powerpoint file ending in .pptx or .jpg')
@@ -91,6 +108,16 @@ option2 = st.selectbox('Output language',
 
 value1 = Languages[option1]
 value2 = Languages[option2]
+
+    # Instantiate translation pipeline
+def translation_pipeline(original_text):
+    model_name = f"./opus-mt-{value1}-{value2}" #f"Helsinki-NLP/opus-mt-{value1}-{value2}"
+    model = MarianMTModel.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    batch = tokenizer([original_text], return_tensors= 'pt')
+    generated_ids = model.generate(**batch)
+    translated_text = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+    return translated_text
 
 if st.button('Translate File'):
     
@@ -206,5 +233,14 @@ if st.button('Translate File'):
 
             st.success('Your Image file has been translated')
             st.download_button('The Text from your image', text_to_add, file_name=f'Your_translated.txt')
+
+    elif '.pdf' in uploaded_file.name:
+        text = perform_pdfocr(uploaded_file)
+        #st.download_button('temporary test', text, file_name='temporary_test.txt')
+        results = translation_pipeline(text)
+        text_to_add = results
+
+        st.success('Your Image file has been translated')
+        st.download_button('The Text from your image', text_to_add, file_name=f'Your_translated.txt')
     else:
         st.error("Unsupported File Type")
