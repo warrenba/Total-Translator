@@ -18,8 +18,8 @@ from PIL import Image
 import cv2
 from pdf2image import convert_from_bytes
 
-def ocrcore(img):
-    text= pytesseract.image_to_string(img, lang= 'ukr')
+def ocrcore(img, language):
+    text= pytesseract.image_to_string(img, lang= language)
     return text
 
 def get_grayscale(image):
@@ -58,6 +58,8 @@ with col5:
 st.write('More translation options can be added upon request.')
 
 uploaded_file = st.file_uploader('upload your powerpoint file here')
+
+
 
 if uploaded_file:
     if '.pptx' in uploaded_file.name:
@@ -99,8 +101,8 @@ if uploaded_file:
     else:
         st.error('Please upload a Powerpoint file ending in .pptx or .jpg')
 
-Languages = {'arabic':'ar','english':'en', 'chinese': 'zh', 'ukrainian': 'uk', 'russian':'rn', 'placeholder':'none'}
-
+Languages = {'arabic':'ar','english':'en', 'chinese': 'zh', 'ukrainian': 'uk', 'russian':'ru', 'placeholder':'none'}
+languageocr = {'arabic':'ara','english':'eng', 'chinese': 'chi', 'ukrainian': 'ukr', 'russian':'rus', 'placeholder':'none'}
 option1 = st.selectbox('Input language',
                       ('arabic', 'chinese', 'ukrainian','russian'))
 option2 = st.selectbox('Output language',
@@ -108,6 +110,8 @@ option2 = st.selectbox('Output language',
 
 value1 = Languages[option1]
 value2 = Languages[option2]
+
+language= languageocr[option1]
 
     # Instantiate translation pipeline
 def translation_pipeline(original_text):
@@ -118,6 +122,14 @@ def translation_pipeline(original_text):
     generated_ids = model.generate(**batch)
     translated_text = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
     return translated_text
+
+on = st.toggle('Chat Box for Direct Translation')
+
+if on:
+    user_input = st.text_input("Enter your message:", "")
+    if st.button("Send"):
+        results = translation_pipeline(user_input)
+        st.write(results)
 
 if st.button('Translate File'):
     
@@ -198,7 +210,7 @@ if st.button('Translate File'):
             img = threshholding(img)
             img = remove_noise(img)
 
-            text = ocrcore(img)
+            text = ocrcore(img, language)
             results = translation_pipeline(text)
             text_to_add = results
 
@@ -227,7 +239,7 @@ if st.button('Translate File'):
             img = threshholding(img)
             img = remove_noise(img)
 
-            text = ocrcore(img)
+            text = ocrcore(img, language)
             results = translation_pipeline(text)
             text_to_add = results
 
@@ -242,5 +254,7 @@ if st.button('Translate File'):
 
         st.success('Your Image file has been translated')
         st.download_button('The Text from your image', text_to_add, file_name=f'Your_translated.txt')
+
+
     else:
         st.error("Unsupported File Type")
